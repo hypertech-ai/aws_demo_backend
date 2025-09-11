@@ -27,7 +27,7 @@ Resources:
       ImageId: ami-02d26659fd82cf299 # Ubuntu 22.04 LTS in ap-south-1
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
-          DeviceIndex: '0'
+          DeviceIndex: "0"
           SubnetId: subnet-003959a80085f6805
           GroupSet:
             - !Ref InstanceSecurityGroup
