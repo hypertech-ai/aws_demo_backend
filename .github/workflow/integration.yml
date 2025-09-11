@@ -1,0 +1,47 @@
+name: Deploy Express Backend
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build (if needed)
+      run: npm run build || echo "No build step defined"
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          if [ ! -d "/home/ubuntu/app" ]; then
+            git clone https://github.com/your-repo/aws_demo_backend.git /home/ubuntu/app
+          fi
+          cd /home/ubuntu/app
+          git pull origin main
+          npm install --production
+          # Write .env from GitHub Secret
+          echo "${{ secrets.ENV_FILE }}" > .env
+          pm2 restart express-app || pm2 start npm --name "express-app" -- run start
