@@ -46,6 +46,20 @@ app.post("/login", (req, res) => {
   });
 });
 
+app.get("/health", (req, res) => {
+  const uptimeSeconds = process.uptime();
+  const hours = Math.floor(uptimeSeconds / 3600);
+  const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+  const seconds = Math.floor(uptimeSeconds % 60);
+  
+  res.status(200).json({
+    status: "ok",
+    uptime: `${hours}h ${minutes}m ${seconds}s`,
+    timestamp: new Date().toLocaleString(),
+  });
+})
+
+
 app.listen(8081, () => {
   console.log("Server is listening on port 8081");
 });
