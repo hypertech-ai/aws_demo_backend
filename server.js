@@ -15,6 +15,10 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
+app.get("/", (req, res) => {
+  res.send("Express server is running!");
+});
+
 // Signup endpoint
 app.post("/signup", (req, res) => {
   const { name, email, password } = req.body;
