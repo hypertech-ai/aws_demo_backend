@@ -35,7 +35,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           if [ ! -d "/home/ubuntu/app" ]; then
-            git clone https://github.com/your-repo/aws_demo_backend.git /home/ubuntu/app
+            git clone https://github.com/hypertech-ai/aws_demo_backend.git /home/ubuntu/app
           fi
           cd /home/ubuntu/app
           git pull origin main
