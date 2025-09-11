@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Express + MySQL backend deployment on EC2"
+
+Resources:
+  # Security Group
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow SSH and Express"
+      VpcId: vpc-05baa91bd491aea21
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8081   # Changed to match Express server.js
+          ToPort: 8081
+          CidrIp: 0.0.0.0/0
+
+  # EC2 Instance
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: aws_demo_backend
+      ImageId: ami-02d26659fd82cf299 # Ubuntu 22.04 LTS in ap-south-1
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: '0'
+          SubnetId: subnet-003959a80085f6805
+          GroupSet:
+            - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: AWS-Demo-Backend-Instance
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          apt-get update -y
+          DEBIAN_FRONTEND=noninteractive apt-get install -y curl git mysql-server
+
+          # Install Node.js (v20)
+          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+          apt-get install -y nodejs build-essential
+
+          # Install PM2
+          npm install -g pm2
+
+          # Setup MySQL (basic demo)
+          systemctl start mysql
+          systemctl enable mysql
+          mysql -e "CREATE DATABASE IF NOT EXISTS myappdb;"
+          mysql -e "CREATE USER IF NOT EXISTS 'myappuser'@'localhost' IDENTIFIED BY 'myappuser';"
+          mysql -e "GRANT ALL PRIVILEGES ON myappdb.* TO 'myappuser'@'localhost';"
+          mysql -e "FLUSH PRIVILEGES;"
+
+          mysql -e "USE myappdb; \
+            CREATE TABLE IF NOT EXISTS login ( \
+              id INT AUTO_INCREMENT PRIMARY KEY, \
+              name VARCHAR(50) NOT NULL, \
+              email VARCHAR(100) NOT NULL UNIQUE, \
+              password VARCHAR(255) NOT NULL, \
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP \
+            );"  
+
+  # Elastic IP
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  # Associate Elastic IP with Instance
+  EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      InstanceId: !Ref EC2Instance
+      EIP: !Ref ElasticIP
+
+Outputs:
+  InstanceId:
+    Description: "The Instance ID"
+    Value: !Ref EC2Instance
+
+  ElasticIPAddress:
+    Description: "Elastic IP address of the instance"
+    Value: !Ref ElasticIP
