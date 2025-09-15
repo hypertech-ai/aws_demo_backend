@@ -39,7 +39,8 @@ jobs:
           fi
           cd /home/ubuntu/app
           git pull origin main
-          npm install --production
+          git reset --hard origin/main 
+          npm ci --omit=dev     
           # Write .env from GitHub Secret
           echo "${{ secrets.ENV_FILE }}" > .env
           pm2 restart express-app || pm2 start npm --name "express-app" -- run start
