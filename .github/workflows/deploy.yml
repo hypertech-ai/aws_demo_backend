@@ -59,4 +59,4 @@ jobs:
           echo "${{ secrets.ENV_FILE }}" > .env
 
           # Restart app with PM2 (or start if not running)
-          pm2 restart express-app || pm2 start npm --name "express-app" -- run start
+          pm2 restart express-app || pm2 start npm --name "express-app" -- run start --cwd /home/ubuntu/app
