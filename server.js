@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/api/auth', require('./routs/auth'))
+app.use('/api/auth', require('./routes/auth'))
 
 sequelize.sync({ alter: true })  // creates table if not exists
   .then(() => console.log("✅ MySQL Database synced"))
