@@ -5,10 +5,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const fetchuser = require("../middleware/fetchuser");
 const User = require("../models/User");
+
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 console.log("JWT_SECRET:",JWT_SECRET);
+
 
 // ROUTE 1: Create a User
 router.post("/createuser", [
@@ -38,7 +40,9 @@ router.post("/createuser", [
     });
 
     const data = { user: { id: user.id } };
+
     console.log("data:",data);
+
     const authtoken = jwt.sign(data, JWT_SECRET, { expiresIn: "1h" });
 
     success = true;
@@ -74,8 +78,9 @@ router.post("/login", [
     }
 
     const data = { user: { id: user.id } };
-    console.log("📝 Creating JWT with data:", data);
-    console.log("🔑 Using JWT_SECRET:", JWT_SECRET ? "Present" : "Missing");
+
+    console.log("Creating JWT with data:", data);
+    console.log("Using JWT_SECRET:", JWT_SECRET ? "Present" : "Missing");
     
     if (!JWT_SECRET) {
       console.error("❌ JWT_SECRET is not defined in environment variables");
@@ -86,6 +91,7 @@ router.post("/login", [
     }
     
     const authtoken = jwt.sign(data, JWT_SECRET, { expiresIn: "1h" });
+
     success = true;
     res.json({ success, authtoken });
   } catch (error) {

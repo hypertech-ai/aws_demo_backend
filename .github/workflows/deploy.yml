@@ -2,7 +2,7 @@ name: Deploy Express Backend
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]   # Trigger deploy on pushes to main
 
 jobs:
   build-and-deploy:
@@ -10,23 +10,29 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20.x]   # Match Node version with your EC2 server
 
     steps:
-    - uses: actions/checkout@v4
+    # 1. Checkout repository
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
+    # 2. Setup Node.js on GitHub runner (to validate build before deploy)
+    - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
+    # 3. Install dependencies (on runner) — just to ensure code builds
     - name: Install dependencies
       run: npm install
 
+    # 4. Optional build step
     - name: Build (if needed)
       run: npm run build || echo "No build step defined"
 
+    # 5. Deploy to EC2
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.10
       with:
@@ -34,13 +40,23 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          # Ensure app directory exists
           if [ ! -d "/home/ubuntu/app" ]; then
             git clone https://github.com/hypertech-ai/aws_demo_backend.git /home/ubuntu/app
           fi
+
           cd /home/ubuntu/app
-          git pull origin main
-          git reset --hard origin/main 
-          npm ci --omit=dev     
-          # Write .env from GitHub Secret
+
+          # Sync with latest main branch
+          git fetch --all
+          git reset --hard origin/main
+
+          # Clean install dependencies
+          rm -rf node_modules package-lock.json
+          npm install --omit=dev
+
+          # Write environment variables from GitHub Secret
           echo "${{ secrets.ENV_FILE }}" > .env
+
+          # Restart app with PM2 (or start if not running)
           pm2 restart express-app || pm2 start npm --name "express-app" -- run start
