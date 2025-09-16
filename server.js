@@ -13,8 +13,8 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'))
 
 sequelize.sync({ alter: true })  // creates table if not exists
-  .then(() => console.log("MySQL Database synced"))
-  .catch(err => console.error("DB sync error:", err));
+  .then(() => console.log("✅ MySQL Database synced"))
+  .catch(err => console.error("❌ DB sync error:", err));
 
 app.get("/", (req, res) => {
   res.send("Express server is running!");
@@ -39,7 +39,7 @@ app.get("/health", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server is listening on port: ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log(`API endpoint: http://localhost:${PORT}/`);
+  console.log(`🚀 Server is listening on port: ${PORT}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  console.log(`📝 API endpoint: http://localhost:${PORT}/`);
 });
