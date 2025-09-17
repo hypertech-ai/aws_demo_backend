@@ -18,7 +18,7 @@ const fetchuser = (req, res, next) => {
   try {
     // If token comes with "Bearer " prefix, remove it
     const actualToken = token.startsWith("Bearer ") ? token.split(" ")[1] : token;
-    console.log(" Verifying token...");
+    console.log(" Verifying token....");
     
     if (!process.env.JWT_SECRET) {
       console.error(" JWT_SECRET is not defined in environment variables");
